@@ -1,0 +1,1 @@
+export const SERVICE_NAME = 'pos-test-cicd-frontend';
