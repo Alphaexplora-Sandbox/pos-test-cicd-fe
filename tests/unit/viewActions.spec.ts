@@ -210,5 +210,69 @@ describe('viewActions service', () => {
     );
     expect(failRes.success).toBe(false);
     expect(failRes.error).toBe('Out of stock');
+
+    // Test non-Error thrown (string) and null customer checkout
+    const nonErrorApi: Partial<PosApiClient> = {
+      createOrder: jest.fn().mockRejectedValue('Fatal network crash'),
+    };
+    const stringErrRes = await executeCheckoutAction(
+      nonErrorApi as PosApiClient,
+      [{ product: FALLBACK_PRODUCTS[0], quantity: 1 }],
+      null,
+      null,
+      'Cash',
+      10,
+      []
+    );
+    expect(stringErrRes.success).toBe(false);
+    expect(stringErrRes.error).toBe('Unknown checkout error');
+
+    // Test default fallback values when reason/notes is empty string
+    const emptyReasonStock = await adjustStockAction(mockApi as PosApiClient, 'prod-1', 1, '');
+    expect(emptyReasonStock.success).toBe(true);
+
+    const emptyReasonDrop = await recordCashDropAction(mockApi as PosApiClient, 'shift-1', 20, '');
+    expect(emptyReasonDrop.success).toBe(true);
+
+    const emptyNotesClose = await closeShiftAction(mockApi as PosApiClient, 'shift-1', 100, '');
+    expect(emptyNotesClose.success).toBe(true);
+
+    const emptyReasonRefund = await refundOrderAction(mockApi as PosApiClient, 'ord-1', '');
+    expect(emptyReasonRefund.success).toBe(true);
+
+    const emptyReasonVoid = await voidOrderAction(mockApi as PosApiClient, 'ord-1', '');
+    expect(emptyReasonVoid.success).toBe(true);
+
+    // Test non-Error thrown in other actions
+    const nonErrApi: Partial<PosApiClient> = {
+      createCustomer: jest.fn().mockRejectedValue('String rejection'),
+      adjustStock: jest.fn().mockRejectedValue('String rejection'),
+      addCashDrop: jest.fn().mockRejectedValue('String rejection'),
+      closeShift: jest.fn().mockRejectedValue('String rejection'),
+      openShift: jest.fn().mockRejectedValue('String rejection'),
+      refundOrder: jest.fn().mockRejectedValue('String rejection'),
+      voidOrder: jest.fn().mockRejectedValue('String rejection'),
+    };
+
+    const custErr = await createCustomerAction(nonErrApi as PosApiClient, 'A', 'b@c.com', '123');
+    expect(custErr.error).toBe('Unknown error');
+
+    const stockErr = await adjustStockAction(nonErrApi as PosApiClient, 'prod-1', 1, 'note');
+    expect(stockErr.error).toBe('Unknown error');
+
+    const dropErr = await recordCashDropAction(nonErrApi as PosApiClient, 'shift-1', 10, 'note');
+    expect(dropErr.error).toBe('Unknown error');
+
+    const closeErr = await closeShiftAction(nonErrApi as PosApiClient, 'shift-1', 10, 'note');
+    expect(closeErr.error).toBe('Unknown error');
+
+    const openErr = await openShiftAction(nonErrApi as PosApiClient, 10);
+    expect(openErr.error).toBe('Unknown error');
+
+    const refundErr = await refundOrderAction(nonErrApi as PosApiClient, 'ord-1', 'note');
+    expect(refundErr.error).toBe('Unknown error');
+
+    const voidErr = await voidOrderAction(nonErrApi as PosApiClient, 'ord-1', 'note');
+    expect(voidErr.error).toBe('Unknown error');
   });
 });

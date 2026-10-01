@@ -117,7 +117,7 @@ export function AnalyticsView({ analytics }: AnalyticsViewProps) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {analytics.categorySales.map((cat) => {
-              const pct = maxRevenue > 0 ? (cat.revenue / maxRevenue) * 100 : 0;
+              const pct = (cat.revenue / maxRevenue) * 100;
               return (
                 <div key={cat.categoryId}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>

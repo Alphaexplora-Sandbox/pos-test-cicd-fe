@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { terminalController } from '../../src/services/terminalController';
 import { posApi, FALLBACK_PRODUCTS, FALLBACK_CUSTOMERS, FALLBACK_ORDERS, FALLBACK_SHIFT } from '../../src/services/api';
-import { CartItem } from '../../src/services/posLogic';
+import { CartItem, formatReceiptData } from '../../src/services/posLogic';
 import { ReceiptDto } from '../../src/types/pos';
 
 describe('terminalController unit tests', () => {
@@ -136,6 +136,36 @@ describe('terminalController unit tests', () => {
     expect(receiptGenerated).not.toBeNull();
     expect(checkoutClosed).toBe(true);
     expect(orderReceived).toBe(true);
+
+    // Test payment with no discount and no customer (anonymous) without callback
+    const anonCompleted = await terminalController.completePayment(
+      [{ product: sampleProduct, quantity: 1 }],
+      '',
+      '',
+      0,
+      'Card',
+      10,
+      FALLBACK_CUSTOMERS,
+      posApi,
+      () => {},
+      () => {}
+    );
+    expect(anonCompleted).not.toBeNull();
+
+    // Test payment with unmatched customer ID
+    const unmatchedCustomerPayment = await terminalController.completePayment(
+      [{ product: sampleProduct, quantity: 1 }],
+      'unmatched-cust-id',
+      '',
+      0,
+      'Cash',
+      10,
+      FALLBACK_CUSTOMERS,
+      posApi,
+      () => {},
+      () => {}
+    );
+    expect(unmatchedCustomerPayment).not.toBeNull();
   });
 
   it('viewReceipt retrieves receipt from API or falls back to order list', async () => {
@@ -160,6 +190,19 @@ describe('terminalController unit tests', () => {
       setReceipt
     );
     expect(nullRes).toBeNull();
+
+    // API returned receipt directly
+    const mockApiReceipt = {
+      ...posApi,
+      getOrderReceipt: jest.fn().mockResolvedValue(formatReceiptData(FALLBACK_ORDERS[0])),
+    };
+    const apiDirectRes = await terminalController.viewReceipt(
+      FALLBACK_ORDERS[0].id,
+      [],
+      mockApiReceipt as any,
+      setReceipt
+    );
+    expect(apiDirectRes).not.toBeNull();
   });
 
   it('refundOrder and voidOrder trigger callbacks', async () => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   fetchInitialAppData,
   refreshProductsList,
@@ -117,5 +118,34 @@ describe('appState service', () => {
     };
     const failCusts = await refreshCustomersList(mockApiFail as PosApiClient, FALLBACK_CUSTOMERS);
     expect(failCusts).toEqual(FALLBACK_CUSTOMERS);
+  });
+
+  it('falls back to default fallback objects when API returns empty or null arrays', async () => {
+    const mockEmptyApi: Partial<PosApiClient> = {
+      getCategories: jest.fn().mockResolvedValue([]),
+      getProducts: jest.fn().mockResolvedValue([]),
+      getCustomers: jest.fn().mockResolvedValue([]),
+      getOrders: jest.fn().mockResolvedValue(null as any),
+      getCurrentShift: jest.fn().mockResolvedValue(null as any),
+      getAnalytics: jest.fn().mockResolvedValue(null as any),
+    };
+
+    const state = await fetchInitialAppData(mockEmptyApi as PosApiClient);
+    expect(state.categories).toEqual(FALLBACK_CATEGORIES);
+    expect(state.products).toEqual(FALLBACK_PRODUCTS);
+    expect(state.customers).toEqual(FALLBACK_CUSTOMERS);
+    expect(state.orders).toEqual(FALLBACK_ORDERS);
+    expect(state.currentShift).toEqual(FALLBACK_SHIFT);
+    expect(state.analytics).toEqual(FALLBACK_ANALYTICS);
+
+    // Also test null branches for refresh functions
+    const emptyProds = await refreshProductsList({ getProducts: jest.fn().mockResolvedValue([]) } as any, FALLBACK_PRODUCTS);
+    expect(emptyProds).toEqual(FALLBACK_PRODUCTS);
+
+    const emptyCusts = await refreshCustomersList({ getCustomers: jest.fn().mockResolvedValue([]) } as any, FALLBACK_CUSTOMERS);
+    expect(emptyCusts).toEqual(FALLBACK_CUSTOMERS);
+
+    const emptyShift = await refreshShiftStatus({ getCurrentShift: jest.fn().mockResolvedValue(null as any) } as any, FALLBACK_SHIFT);
+    expect(emptyShift).toBeNull();
   });
 });

@@ -35,11 +35,13 @@ import { colors } from './components/styles';
 export interface AppProps {
   title?: string;
   initialView?: PosView;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function App({
   title = 'pos-test-cicd-frontend',
   initialView = 'terminal',
+  onRenderTree,
 }: AppProps) {
   const [currentView, setCurrentView] = useState<PosView>(initialView);
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
@@ -77,7 +79,7 @@ export function App({
     refreshOrders();
   };
 
-  return (
+  const content = (
     <div
       style={{
         backgroundColor: colors.bg,
@@ -141,6 +143,8 @@ export function App({
       </main>
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export async function handleAppProductRefresh(

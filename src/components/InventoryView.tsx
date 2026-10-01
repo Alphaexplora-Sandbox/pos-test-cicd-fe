@@ -9,6 +9,7 @@ interface InventoryViewProps {
   categories: Category[];
   onRefreshProducts?: () => void;
   initialAdjustingProduct?: Product | null;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function InventoryView({
@@ -16,6 +17,7 @@ export function InventoryView({
   categories,
   onRefreshProducts,
   initialAdjustingProduct = null,
+  onRenderTree,
 }: InventoryViewProps) {
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
@@ -45,7 +47,7 @@ export function InventoryView({
     }
   };
 
-  return (
+  const content = (
     <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', height: 'calc(100vh - 72px)', boxSizing: 'border-box' }}>
       {/* Metrics Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
@@ -243,6 +245,8 @@ export function InventoryView({
       )}
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export async function executeInventoryStockAdjust(

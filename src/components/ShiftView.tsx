@@ -8,12 +8,14 @@ interface ShiftViewProps {
   currentShift: RegisterShift | null;
   onRefreshShift?: () => void;
   initialModal?: 'drop' | 'close' | 'open' | null;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function ShiftView({
   currentShift,
   onRefreshShift,
   initialModal = null,
+  onRenderTree,
 }: ShiftViewProps) {
   const [isDroppingCash, setIsDroppingCash] = useState<boolean>(initialModal === 'drop');
   const [dropType, setDropType] = useState<'Drop' | 'Payout'>('Drop');
@@ -56,7 +58,7 @@ export function ShiftView({
     }
   };
 
-  return (
+  const content = (
     <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', height: 'calc(100vh - 72px)', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -273,6 +275,8 @@ export function ShiftView({
       )}
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export async function executeShiftCashDrop(

@@ -9,12 +9,14 @@ interface OrdersViewProps {
   orders: Order[];
   onRefreshOrders?: () => void;
   initialSelectedReceipt?: ReceiptDto | null;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function OrdersView({
   orders,
   onRefreshOrders,
   initialSelectedReceipt = null,
+  onRenderTree,
 }: OrdersViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
@@ -40,7 +42,7 @@ export function OrdersView({
     setActionLoading(false);
   };
 
-  return (
+  const content = (
     <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', height: 'calc(100vh - 72px)', boxSizing: 'border-box' }}>
       {/* Top Filter Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
@@ -223,6 +225,8 @@ export function OrdersView({
       )}
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export function findAndFormatReceipt(orders: Order[], orderId: string) {

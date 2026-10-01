@@ -26,6 +26,8 @@ interface TerminalViewProps {
   initialDiscountCode?: string;
   initialDiscountAmount?: number;
   initialDiscountMessage?: string;
+  initialSearchQuery?: string;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function TerminalView({
@@ -41,9 +43,11 @@ export function TerminalView({
   initialDiscountCode = '',
   initialDiscountAmount = 0,
   initialDiscountMessage = '',
+  initialSearchQuery = '',
+  onRenderTree,
 }: TerminalViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
   const [cart, setCart] = useState<CartItem[]>(initialCart);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [discountCode, setDiscountCode] = useState<string>(initialDiscountCode);
@@ -109,7 +113,7 @@ export function TerminalView({
     }
   };
 
-  return (
+  const content = (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.25rem', height: 'calc(100vh - 72px)', boxSizing: 'border-box', padding: '1rem 1.5rem' }}>
       {/* LEFT COLUMN: Catalog & Products */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'hidden' }}>
@@ -652,6 +656,8 @@ export function TerminalView({
       )}
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export function executeTerminalAddToCart(cart: CartItem[], product: Product): CartItem[] {

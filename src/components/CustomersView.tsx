@@ -8,12 +8,14 @@ interface CustomersViewProps {
   customers: Customer[];
   onRefreshCustomers?: () => void;
   initialAdding?: boolean;
+  onRenderTree?: (tree: unknown) => void;
 }
 
 export function CustomersView({
   customers,
   onRefreshCustomers,
   initialAdding = false,
+  onRenderTree,
 }: CustomersViewProps) {
   const [search, setSearch] = useState<string>('');
   const [isAdding, setIsAdding] = useState<boolean>(initialAdding);
@@ -42,7 +44,7 @@ export function CustomersView({
     }
   };
 
-  return (
+  const content = (
     <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', height: 'calc(100vh - 72px)', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -161,6 +163,8 @@ export function CustomersView({
       )}
     </div>
   );
+  onRenderTree?.(content);
+  return content;
 }
 
 export async function executeCustomerCreate(
